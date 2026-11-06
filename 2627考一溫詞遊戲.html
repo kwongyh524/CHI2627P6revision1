@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2627考一：不供詞填充大冒險</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter & Noto Sans TC -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      user-select: none;
+    }
+    
+    /* Dungeon Background Styling */
+    .dungeon-bg {
+      background-color: #0d0f17;
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(217, 119, 6, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.12) 0%, transparent 40%),
+        linear-gradient(to bottom, rgba(13, 15, 23, 0.75), rgba(13, 15, 23, 0.95)),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h60v60H0z' fill='none'/%3E%3Cpath d='M0 30h60M30 0v60M0 15h30M30 45h30M15 0v30M45 30v30' stroke='%201f293d' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    }
+
+    /* RPG Damage Shake Animation */
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-10px, 6px) rotate(-4deg); }
+      40% { transform: translate(10px, -6px) rotate(4deg); }
+      60% { transform: translate(-6px, 3px) rotate(-2deg); }
+      80% { transform: translate(6px, -3px) rotate(2deg); }
+    }
+    .animate-shake {
+      animation: shake 0.45s ease-in-out;
+    }
+
+    /* Hero Attack Animation */
+    @keyframes heroAttack {
+      0% { transform: translateX(0) scale(1); }
+      40% { transform: translateX(35px) scale(1.1); }
+      100% { transform: translateX(0) scale(1); }
+    }
+    .animate-hero-attack {
+      animation: heroAttack 0.35s ease-out;
+    }
+
+    /* Floating Text Effect */
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      50% { opacity: 1; transform: translateY(-30px) scale(1.3); }
+      100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
+    }
+    .float-text {
+      animation: floatUp 0.9s ease-out forwards;
+    }
+
+    /* Torch Flame Pulse */
+    @keyframes torchPulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); filter: drop-shadow(0 0 8px #f59e0b); }
+      50% { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 16px #fbbf24); }
+    }
+    .torch-glow {
+      animation: torchPulse 2s infinite ease-in-out;
+    }
+
+    /* Pouch Magic Burst Animation */
+    @keyframes pouchBurst {
+      0% { transform: scale(0.8); opacity: 0; filter: brightness(2) blur(4px); }
+      50% { transform: scale(1.05); opacity: 1; filter: brightness(1.5) blur(0px); }
+      100% { transform: scale(1); opacity: 1; filter: brightness(1); }
+    }
+    .animate-pouch-burst {
+      animation: pouchBurst 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Confetti Particle Animation */
+    @keyframes confettiFall {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -20px;
+      z-index: 100;
+      pointer-events: none;
+      animation: confettiFall 3s linear forwards;
+    }
+
+    /* Fade-in animation for panels */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="dungeon-bg text-white min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-amber-500 selection:text-slate-900">
+
+  <!-- TOP NAV BAR -->
+  <header class="bg-slate-900/90 backdrop-blur border-b border-amber-600/40 px-4 py-3 sticky top-0 z-50 shadow-lg">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 text-slate-950 flex items-center justify-center font-bold text-xl shadow-lg shadow-amber-500/20 border border-amber-300/40">
+          <i class="fa-solid fa-dungeon text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-black tracking-wide text-amber-400 drop-shadow">2627考一：不供詞填充大冒險</h1>
+          <p class="text-xs text-amber-200/70 hidden sm:block">地城試煉 ‧ 詞語 RPG 戰鬥</p>
+        </div>
+      </div>
+      
+      <!-- Audio Toggle & Reset -->
+      <div class="flex items-center gap-2">
+        <button id="btn-sound" onclick="toggleSound()" class="p-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-amber-400 transition shadow" title="開關音效">
+          <i id="sound-icon" class="fa-solid fa-volume-high text-lg"></i>
+        </button>
+        <button onclick="restartGame()" class="px-3 py-1.5 text-xs bg-red-700/80 hover:bg-red-600 border border-red-500/50 rounded-lg font-bold transition flex items-center gap-1 shadow">
+          <i class="fa-solid fa-rotate-left"></i> 重置
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-4xl mx-auto w-full p-4 flex-1 flex flex-col justify-center">
+
+    <!-- SCREEN 1: HERO SELECTION -->
+    <section id="screen-hero-select" class="space-y-6 animate-fadeIn">
+      
+      <!-- 顯眼提示橫幅 -->
+      <div class="relative overflow-hidden bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 p-0.5 rounded-2xl shadow-2xl shadow-amber-500/20 animate-pulse">
+        <div class="bg-slate-950/90 backdrop-blur rounded-[15px] p-4 text-center border border-amber-300/50">
+          <div class="inline-flex items-center justify-center gap-2 text-amber-300 font-black text-lg md:text-xl tracking-wide drop-shadow-md">
+            <i class="fa-solid fa-gift text-red-400 text-2xl animate-bounce"></i>
+            <span>取得最高經驗的3位同學，可向老師領取中文科小禮物一份!</span>
+            <i class="fa-solid fa-trophy text-yellow-400 text-2xl animate-bounce"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center space-y-2">
+        <h2 class="text-2xl md:text-3xl font-black text-amber-400 drop-shadow-md">請選擇您的冒險英雄</h2>
+        <p class="text-slate-300 text-sm md:text-base">選擇適合您的職業，深入暗黑地城討伐魔物！</p>
+      </div>
+
+      <!-- HERO CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+        
+        <!-- MAGE -->
+        <div class="bg-slate-900/90 border-2 border-purple-500/60 hover:border-purple-400 rounded-2xl p-5 flex flex-col justify-between transition hover:-translate-y-1.5 shadow-2xl hover:shadow-purple-500/20 relative overflow-hidden group">
+          <div class="bg-gradient-to-r from-purple-700 to-indigo-700 text-purple-100 text-xs font-black px-3 py-1 rounded-full w-max mx-auto mb-3 shadow border border-purple-300/40">
+            <i class="fa-solid fa-star text-amber-300 mr-1"></i> 建議 A 同學選擇法師
+          </div>
+          
+          <div class="text-center space-y-3">
+            <div class="w-28 h-28 mx-auto rounded-2xl bg-purple-950/80 border-2 border-purple-400/80 p-2 flex items-center justify-center shadow-inner group-hover:scale-105 transition">
+              <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+                <path d="M25,85 L75,85 L68,45 L32,45 Z" fill="#6b21a8" />
+                <path d="M40,45 L60,45 L50,85 Z" fill="#9333ea" />
+                <circle cx="50" cy="38" r="14" fill="#fde047" opacity="0.3"/>
+                <path d="M30,38 C30,20 70,20 70,38 C70,45 62,50 50,50 C38,50 30,45 30,38 Z" fill="#581c87" />
+                <circle cx="50" cy="36" r="8" fill="#fca5a5" />
+                <circle cx="47" cy="35" r="1.5" fill="#a855f7" />
+                <circle cx="53" cy="35" r="1.5" fill="#a855f7" />
+                <line x1="72" y1="20" x2="72" y2="88" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="72" cy="18" r="7" fill="#c084fc" />
+                <polygon points="72,8 75,15 82,18 75,21 72,28 69,21 62,18 69,15" fill="#f0abfc"/>
+              </svg>
+            </div>
+
+            <h3 class="text-xl font-black text-purple-300">法師</h3>
+            <div class="text-xs text-slate-300 space-y-1.5 text-left bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+              <p><i class="fa-solid fa-heart text-red-400 w-5"></i> 初始血量：<span class="font-bold text-white">50 HP</span></p>
+              <p><i class="fa-solid fa-bolt text-amber-400 w-5"></i> 經驗加成：<span class="font-bold text-emerald-400">+30%</span></p>
+              <p><i class="fa-solid fa-lightbulb text-slate-500 w-5"></i> 答案提示：<span class="text-red-400 font-bold">無法使用</span></p>
+              <p><i class="fa-solid fa-box-archive text-blue-300 w-5"></i> 小錦囊（4選1）：<span class="text-slate-400 font-bold">0 個</span></p>
+            </div>
+          </div>
+
+          <button onclick="selectHero('mage')" class="mt-5 w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition active:scale-95 border border-purple-400/30">
+            選擇法師
+          </button>
+        </div>
+
+        <!-- ARCHER -->
+        <div class="bg-slate-900/90 border-2 border-emerald-500/60 hover:border-emerald-400 rounded-2xl p-5 flex flex-col justify-between transition hover:-translate-y-1.5 shadow-2xl hover:shadow-emerald-500/20 relative overflow-hidden group">
+          <div class="bg-gradient-to-r from-emerald-700 to-teal-700 text-emerald-100 text-xs font-black px-3 py-1 rounded-full w-max mx-auto mb-3 shadow border border-emerald-300/40">
+            <i class="fa-solid fa-star text-amber-300 mr-1"></i> 建議 B 同學選擇弓箭手
+          </div>
+          
+          <div class="text-center space-y-3">
+            <div class="w-28 h-28 mx-auto rounded-2xl bg-emerald-950/80 border-2 border-emerald-400/80 p-2 flex items-center justify-center shadow-inner group-hover:scale-105 transition">
+              <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+                <path d="M28,85 L72,85 L65,45 L35,45 Z" fill="#065f46" />
+                <path d="M32,38 C32,22 68,22 68,38 C68,46 60,50 50,50 C40,50 32,46 32,38 Z" fill="#047857" />
+                <circle cx="50" cy="36" r="7.5" fill="#fde047" />
+                <path d="M44,32 Q50,28 56,32 L54,39 L46,39 Z" fill="#15803d"/>
+                <path d="M72,25 Q85,50 72,75" stroke="#78350f" stroke-width="4" fill="none" stroke-linecap="round"/>
+                <line x1="72" y1="25" x2="72" y2="75" stroke="#e2e8f0" stroke-width="1.5"/>
+                <line x1="50" y1="50" x2="80" y2="50" stroke="#f59e0b" stroke-width="2.5"/>
+                <polygon points="84,50 78,47 78,53" fill="#dc2626"/>
+              </svg>
+            </div>
+
+            <h3 class="text-xl font-black text-emerald-300">弓箭手</h3>
+            <div class="text-xs text-slate-300 space-y-1.5 text-left bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+              <p><i class="fa-solid fa-heart text-red-400 w-5"></i> 初始血量：<span class="font-bold text-white">80 HP</span></p>
+              <p><i class="fa-solid fa-bolt text-amber-400 w-5"></i> 經驗加成：<span class="font-bold text-emerald-400">+15%</span></p>
+              <p><i class="fa-solid fa-lightbulb text-amber-300 w-5"></i> 答案提示：<span class="text-emerald-400 font-bold">無限次使用</span></p>
+              <p><i class="fa-solid fa-box-archive text-blue-300 w-5"></i> 小錦囊（4選1）：<span class="text-amber-400 font-bold">3 個</span></p>
+            </div>
+          </div>
+
+          <button onclick="selectHero('archer')" class="mt-5 w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg transition active:scale-95 border border-emerald-400/30">
+            選擇弓箭手
+          </button>
+        </div>
+
+        <!-- KNIGHT -->
+        <div class="bg-slate-900/90 border-2 border-blue-500/60 hover:border-blue-400 rounded-2xl p-5 flex flex-col justify-between transition hover:-translate-y-1.5 shadow-2xl hover:shadow-blue-500/20 relative overflow-hidden group">
+          <div class="bg-gradient-to-r from-blue-700 to-cyan-700 text-blue-100 text-xs font-black px-3 py-1 rounded-full w-max mx-auto mb-3 shadow border border-blue-300/40">
+            <i class="fa-solid fa-star text-amber-300 mr-1"></i> 建議 C 同學選擇騎士
+          </div>
+          
+          <div class="text-center space-y-3">
+            <div class="w-28 h-28 mx-auto rounded-2xl bg-blue-950/80 border-2 border-blue-400/80 p-2 flex items-center justify-center shadow-inner group-hover:scale-105 transition">
+              <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+                <path d="M25,85 L75,85 L66,45 L34,45 Z" fill="#475569" />
+                <path d="M42,45 L58,45 L54,85 L46,85 Z" fill="#94a3b8" />
+                <rect x="34" y="22" width="32" height="26" rx="6" fill="#64748b" />
+                <path d="M34,22 C34,12 66,12 66,22 Z" fill="#475569" />
+                <rect x="38" y="30" width="24" height="5" rx="2" fill="#0f172a" />
+                <path d="M50,14 C50,4 65,8 60,18 Z" fill="#dc2626" />
+                <line x1="76" y1="15" x2="76" y2="82" stroke="#cbd5e1" stroke-width="4"/>
+                <polygon points="76,8 80,18 72,18" fill="#f8fafc"/>
+                <line x1="68" y1="65" x2="84" y2="65" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <h3 class="text-xl font-black text-blue-300">騎士</h3>
+            <div class="text-xs text-slate-300 space-y-1.5 text-left bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+              <p><i class="fa-solid fa-heart text-red-400 w-5"></i> 初始血量：<span class="font-bold text-white">120 HP</span></p>
+              <p><i class="fa-solid fa-bolt text-amber-400 w-5"></i> 經驗加成：<span class="font-bold text-emerald-400">+0%</span></p>
+              <p><i class="fa-solid fa-book-bookmark text-cyan-400 w-5"></i> 專屬技能：<span class="font-bold text-cyan-300">地城詞語寶典</span></p>
+              <p><i class="fa-solid fa-lightbulb text-amber-300 w-5"></i> 答案提示：<span class="text-emerald-400 font-bold">無限次使用</span></p>
+              <p><i class="fa-solid fa-box-archive text-blue-300 w-5"></i> 小錦囊（4選1）：<span class="text-amber-400 font-bold">12 個</span></p>
+            </div>
+          </div>
+
+          <button onclick="selectHero('knight')" class="mt-5 w-full py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg transition active:scale-95 border border-blue-400/30">
+            選擇騎士
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 2: BATTLE ARENA -->
+    <section id="screen-battle" class="hidden space-y-4">
+      
+      <!-- DUNGEON BATTLE ARENA DISPLAY -->
+      <div class="bg-slate-950/90 border-2 border-amber-600/50 rounded-2xl p-4 md:p-6 shadow-2xl relative overflow-hidden backdrop-blur">
+        
+        <div class="absolute top-3 left-4 text-amber-500 torch-glow text-lg"><i class="fa-solid fa-fire"></i></div>
+        <div class="absolute top-3 right-4 text-amber-500 torch-glow text-lg"><i class="fa-solid fa-fire"></i></div>
+
+        <!-- Level Stage Counter & Combo -->
+        <div class="flex justify-between items-center mb-4 text-xs md:text-sm font-bold text-slate-300 border-b border-slate-800 pb-2.5 px-6">
+          <span><i class="fa-solid fa-map-location-dot text-amber-400 mr-1.5"></i> 地城關卡：<span id="level-num" class="text-amber-300 text-base font-black">1</span> / 32</span>
+          <span><i class="fa-solid fa-coins text-amber-400 mr-1.5"></i> 金幣：<span id="battle-coins" class="text-amber-300 text-base font-black">0</span> G</span>
+          <span><i class="fa-solid fa-bolt-lightning text-yellow-400 mr-1.5"></i> 連擊 Combo：<span id="combo-count" class="text-yellow-400 text-base font-black">0</span></span>
+        </div>
+
+        <!-- TIMER BAR & EXP SPEED BONUS NOTICE -->
+        <div class="mb-4 bg-slate-900 border border-amber-500/40 rounded-xl p-2.5 shadow-inner flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <span class="text-xs font-black text-amber-400 flex items-center gap-1 min-w-max">
+              <i class="fa-solid fa-stopwatch text-amber-300 animate-pulse text-base"></i> 倒數時間:
+              <span id="timer-text" class="text-base text-amber-300 font-mono w-7 text-right">60</span>s
+            </span>
+            <div class="w-full sm:w-36 bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-700">
+              <div id="timer-bar" class="bg-gradient-to-r from-amber-500 to-red-500 h-full w-full transition-all duration-100 linear"></div>
+            </div>
+          </div>
+          <p class="text-[11px] text-amber-200/80 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-gauge-high text-yellow-400"></i> ⏱️ 答題越快，經驗加成越高！
+          </p>
+        </div>
+
+        <!-- BATTLE VOID (Hero vs Monster) -->
+        <div class="grid grid-cols-2 gap-4 items-center py-4 relative min-h-[190px]">
+          
+          <div id="fx-layer" class="absolute inset-0 pointer-events-none z-30 flex items-center justify-between px-8"></div>
+
+          <!-- Hero Avatar Area -->
+          <div id="hero-avatar-box" class="flex flex-col items-center space-y-2 transition relative">
+            <div class="relative">
+              <div id="hero-graphics-container" class="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-slate-900 border-2 border-amber-400/80 p-1 flex items-center justify-center shadow-lg shadow-amber-500/10"></div>
+              <span id="hero-lvl-badge" class="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-xs font-black px-2 py-0.5 rounded-full shadow border border-amber-300">
+                Lv.1
+              </span>
+            </div>
+            
+            <div class="w-full max-w-[150px] space-y-1 text-center">
+              <div class="text-xs font-bold text-slate-200 flex justify-between">
+                <span><i class="fa-solid fa-heart text-red-500"></i> 血量</span>
+                <span id="hero-hp-text">100/100</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                <div id="hero-hp-bar" class="bg-gradient-to-r from-red-600 to-red-400 h-full w-full transition-all duration-300"></div>
+              </div>
+              <div class="text-[10px] text-slate-400 flex justify-between pt-0.5">
+                <span>EXP</span>
+                <span id="hero-exp-text">0/100</span>
+              </div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                <div id="hero-exp-bar" class="bg-purple-500 h-full w-0 transition-all duration-300"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monster Avatar Area -->
+          <div id="monster-avatar-box" class="flex flex-col items-center space-y-2 transition">
+            <div class="relative">
+              <div id="monster-graphics-container" class="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-slate-900 border-2 border-red-500/80 p-1 flex items-center justify-center shadow-lg shadow-red-950"></div>
+              <span id="monster-tag" class="absolute -top-2 -left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow border border-red-400">
+                地城魔物
+              </span>
+            </div>
+
+            <div class="w-full max-w-[150px] space-y-1 text-center">
+              <div class="text-xs font-bold text-slate-200 flex justify-between">
+                <span id="monster-name" class="text-red-400 font-bold truncate max-w-[90px]">綠史萊姆</span>
+                <span id="monster-hp-text">1/1</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                <div id="monster-hp-bar" class="bg-emerald-500 h-full w-full transition-all duration-300"></div>
+              </div>
+              <div class="text-[10px] text-amber-400 font-bold text-right pt-0.5">
+                攻擊力：<span id="monster-atk-text" class="text-red-400">15</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- QUESTION AREA -->
+      <div class="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-5 shadow-xl space-y-4">
+        
+        <div class="space-y-2">
+          <div id="question-text" class="text-base md:text-lg font-medium leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800 text-slate-100 shadow-inner">
+            載入題目中...
+          </div>
+        </div>
+
+        <div id="hint-box" class="hidden bg-amber-950/60 border border-amber-500/50 p-3.5 rounded-xl text-xs md:text-sm text-amber-200 animate-fadeIn shadow">
+          <i class="fa-solid fa-lightbulb text-amber-400 mr-1.5"></i> <span id="hint-text"></span>
+        </div>
+
+        <!-- ESCAPE ANSWER PANEL -->
+        <div id="escape-panel" class="hidden bg-red-950/70 border-2 border-red-500/80 rounded-xl p-4 text-center space-y-3 animate-fadeIn shadow-2xl">
+          <div class="text-red-300 font-bold text-sm md:text-base flex items-center justify-center gap-2">
+            <i class="fa-solid fa-person-running text-xl"></i> 成功逃走！（無法獲得10G金幣）受到怪物攻擊，但獲得了正確答案：
+          </div>
+          <div class="text-2xl font-black text-amber-300 tracking-wider py-1 bg-slate-950 rounded-lg border border-red-900/50">
+            <span id="escape-answer-word"></span>
+          </div>
+          <p id="escape-answer-def" class="text-xs md:text-sm text-slate-300 text-left bg-slate-900/80 p-2.5 rounded-lg border border-slate-800"></p>
+          <button onclick="nextLevelAfterEscape()" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-base rounded-xl shadow-lg transition active:scale-95 border border-emerald-300/40 flex items-center justify-center gap-2">
+            <span>挑戰下一關卡</span> <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- INPUT / OPTIONS AREA -->
+        <div id="interactive-area" class="pt-1">
+          <div id="input-mode-container" class="flex gap-2">
+            <input id="answer-input" type="text" placeholder="在此輸入詞語答案..." class="flex-1 bg-slate-950 border border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 rounded-xl px-4 py-3 text-white placeholder-slate-500 outline-none transition font-semibold text-base shadow-inner">
+            <button onclick="submitAnswer()" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl shadow-lg transition active:scale-95 flex items-center gap-1.5 border border-amber-300/40">
+              <span>發動攻擊</span> <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+          </div>
+
+          <div id="choice-mode-container" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </div>
+
+        <!-- HELPER SKILL BUTTONS & SHOP -->
+        <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-slate-800">
+          <div class="flex flex-wrap gap-2">
+            <button id="btn-hint" onclick="useHint()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-600 text-xs font-bold rounded-lg transition flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed shadow">
+              <i class="fa-solid fa-lightbulb"></i> 答案提示 (無限)
+            </button>
+            
+            <button id="btn-pouch" onclick="usePouch()" class="px-3 py-1.5 bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 text-xs font-bold rounded-lg transition flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed shadow">
+              <i class="fa-solid fa-box-archive"></i> 小錦囊: <span id="pouch-count" class="text-amber-400 font-black">0</span> 個
+            </button>
+
+            <button id="btn-knight-skill" onclick="toggleKnightDictionary()" class="hidden px-3 py-1.5 bg-cyan-950 hover:bg-cyan-900 text-cyan-200 border border-cyan-500/50 text-xs font-bold rounded-lg transition flex items-center gap-1 shadow">
+              <i class="fa-solid fa-book-bookmark text-cyan-300"></i> 地城詞語寶典 (騎士專屬)
+            </button>
+
+            <button id="btn-escape" onclick="escapeBattle()" class="px-3 py-1.5 bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-500/50 text-xs font-bold rounded-lg transition flex items-center gap-1 shadow">
+              <i class="fa-solid fa-person-running text-red-400"></i> 逃走 (顯示答案)
+            </button>
+          </div>
+
+          <button onclick="openShop()" class="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-500/50 text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-store text-amber-300"></i> 地城商店
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 3: SHOP MODAL -->
+    <div id="modal-shop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-slate-900 border-2 border-amber-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative animate-fadeIn">
+        <button onclick="closeShop()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="flex items-center gap-2.5 border-b border-slate-800 pb-3">
+          <i class="fa-solid fa-store text-2xl text-amber-400"></i>
+          <div>
+            <h3 class="text-lg font-black text-amber-300">地城補給小店</h3>
+            <p class="text-xs text-slate-400">購買物資準備面對強大魔王！</p>
+          </div>
+        </div>
+
+        <div class="text-sm font-bold text-amber-300 bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center shadow-inner">
+          <span>持有金幣：</span>
+          <span class="text-base"><i class="fa-solid fa-coins mr-1 text-amber-400"></i><span id="shop-coins">0</span> G</span>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex justify-between items-center p-3.5 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-red-950 border border-red-500/50 flex items-center justify-center text-red-400 text-xl shadow">
+                <i class="fa-solid fa-flask"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-slate-200">生命藥水</h4>
+                <p class="text-[11px] text-slate-400">回復 40 血量</p>
+              </div>
+            </div>
+            <button onclick="buyItem('potion')" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-lg transition shadow">
+              80 G
+            </button>
+          </div>
+
+          <div class="flex justify-between items-center p-3.5 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-indigo-950 border border-indigo-500/50 flex items-center justify-center text-indigo-300 text-xl shadow">
+                <i class="fa-solid fa-box-archive"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-slate-200">妙計錦囊補充包</h4>
+                <p class="text-[11px] text-slate-400">增加 1 個小錦囊 (4選1)</p>
+              </div>
+            </div>
+            <button onclick="buyItem('pouch')" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-lg transition shadow">
+              200 G
+            </button>
+          </div>
+        </div>
+
+        <button onclick="closeShop()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold rounded-xl text-slate-200 text-sm transition">
+          返回戰鬥
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 4: GAME OVER / VICTORY -->
+    <section id="screen-end" class="hidden text-center space-y-6 animate-fadeIn">
+      <div id="end-card" class="bg-slate-900 border-2 border-amber-500/60 rounded-2xl p-8 max-w-lg mx-auto shadow-2xl space-y-4">
+        <div id="end-icon" class="text-6xl text-amber-400">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h2 id="end-title" class="text-3xl font-black text-amber-300">冒險大成功！</h2>
+        <p id="end-msg" class="text-slate-300 text-sm md:text-base leading-relaxed">你討伐了地城的所有魔物與終極大魔王，成為了真正的詞語英雄！</p>
+        
+        <div id="end-badge-box" class="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/50 p-3 rounded-xl text-amber-300 font-bold text-sm md:text-base shadow"></div>
+
+        <div class="bg-slate-950 p-4 rounded-xl space-y-2 text-left text-xs md:text-sm border border-slate-800 shadow-inner">
+          <p class="flex justify-between"><span>最終等級：</span> <span id="final-level" class="font-bold text-amber-400">Lv.1</span></p>
+          <p class="flex justify-between"><span>累積經驗值：</span> <span id="final-total-exp" class="font-bold text-purple-400">0 EXP</span></p>
+          <p class="flex justify-between"><span>擊敗魔物數量：</span> <span id="final-monsters-killed" class="font-bold text-red-400">0 隻</span></p>
+          <p class="flex justify-between"><span>累積金幣：</span> <span id="final-coins" class="font-bold text-amber-400">0 G</span></p>
+          <p class="flex justify-between"><span>完成答題數：</span> <span id="final-questions" class="font-bold text-emerald-400">32 / 32</span></p>
+        </div>
+
+        <button onclick="restartGame()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-base rounded-xl shadow-lg transition active:scale-95 border border-amber-300/40">
+          再次挑戰冒險
+        </button>
+      </div>
+    </section>
+
+    <!-- SECTION 5: WORD DICTIONARY (KNIGHT EXCLUSIVE) -->
+    <section id="knight-dictionary-section" class="hidden mt-8 border-t border-slate-800 pt-6">
+      <details id="knight-dictionary-details" class="bg-slate-900/80 border border-cyan-600/40 rounded-2xl overflow-hidden shadow-lg group">
+        <summary class="p-4 bg-slate-900 hover:bg-slate-850 cursor-pointer flex justify-between items-center text-cyan-300 font-bold text-sm md:text-base transition">
+          <span class="flex items-center gap-2">
+            <i class="fa-solid fa-book-bookmark text-cyan-400"></i> 🛡️ 騎士專屬：地城詞語寶典 (32 個考核詞語)
+          </span>
+          <i class="fa-solid fa-chevron-down text-xs transition group-open:rotate-180"></i>
+        </summary>
+        <div class="p-4 bg-slate-950/90 max-h-72 overflow-y-auto">
+          <div id="word-dictionary-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 text-center text-xs md:text-sm"></div>
+        </div>
+      </details>
+    </section>
+
+  </main>
+
+  <footer class="py-3 text-center text-xs text-slate-500 border-t border-slate-900 bg-slate-950/80">
+    《2627考一：不供詞填充大冒險》 &copy; 奇幻詞語學習互動系統
+  </footer>
+
+  <!-- SOUND & GAME LOGIC -->
+  <script>
+    /* =========================================================
+       1. QUESTION BANK (32 ITEMS, ALL DISTRACTORS ARE FROM THE 32 WORDS)
+       ========================================================= */
+    const questionBank = [
+      { id: 1, word: "不懈", definition: "形容堅持到底，毫不鬆懈怠慢。", sentence: "雖然練習過程中遇到了許多挫折，但只要我們保持（　　）的精神，就一定能迎來最後的勝利。", options: ["不懈", "獨特", "粗糙", "莊嚴"] },
+      { id: 2, word: "探求", definition: "探索並尋求事情的道理、知識或答案。", sentence: "科學家們不僅在實驗室裡廢寢忘食地工作，更勇於進入未知的領域（　　）宇宙的奧秘。", options: ["探求", "籌劃", "抵禦", "目睹"] },
+      { id: 3, word: "疑團", definition: "許多積聚在心中、難以解答的疑問。", sentence: "聽完老師詳細的說明後，我心中的（　:）終於解開了。", options: ["疑團", "範圍", "天賦異稟", "象徵"] },
+      { id: 4, word: "翱翔", definition: "在空中迴旋飛翔。", sentence: "雄鷹不僅展現出矯健的身姿，更在藍天白雲之間自由自在地（　　），俯瞰著遼闊的大地。", options: ["翱翔", "仰望", "衝擊", "覆蓋"] },
+      { id: 5, word: "無影無蹤", definition: "消失得乾乾淨淨，連一點痕痕都沒有。", sentence: "剛才還在草地上蹦蹦跳跳的小兔，一聽到強烈的雷聲後，便立刻嚇得逃得（　　）。", options: ["無影無蹤", "鬼斧神工", "高聳入雲", "瞬息萬變"] },
+      { id: 6, word: "稀奇古怪", definition: "十分罕見且古怪罕有。", sentence: "這間童話主題館裡不僅展出了各種（　　）的玩具，還吸引了無數好奇的遊客前來拍照。", options: ["稀奇古怪", "相輔相成", "肅然起敬", "天賦異稟"] },
+      { id: 7, word: "瞬息萬變", definition: "在極短的時間內發生極多極快的變化。", sentence: "山區的天氣不僅（　　），而且前一秒還是晴空萬里，下一秒就可能下起傾盆大雨。", options: ["瞬息萬變", "無影無蹤", "鬼斧神工", "稀奇古怪"] },
+      { id: 8, word: "相輔相成", definition: "兩件事物互相輔助、互相促成。", sentence: "理論研究與實踐操作不僅不是相互對立的，反而能夠（　　），共同提升學習效果。", options: ["相輔相成", "拾級而上", "歎為觀止", "肅然起敬"] },
+      { id: 9, word: "獨特", definition: "獨一無二，與眾不同。", sentence: "這座歷史小鎮不僅保留了（　）的建築風格，還展現出濃厚的傳統文化氣息。", options: ["獨特", "靈敏", "莊嚴", "粗糙"] },
+      { id: 10, word: "密切", definition: "關係或聯繫非常緊密親近。", sentence: "醫療團隊不僅要關心病人的身體狀況，還要與家屬保持（　　）的溝通，以制定最佳診療方案。", options: ["密切", "不懈", "構造", "消耗"] },
+      { id: 11, word: "靈敏", definition: "反應迅速而敏捷。", sentence: "警犬不僅擁有十分（　　）的嗅覺，而且能在複雜環境中精準辨識微弱的氣味。", options: ["靈敏", "獨特", "哆嗦", "莊嚴"] },
+      { id: 12, word: "抵禦", definition: "抵抗並防禦外來的侵襲。", sentence: "這座古老的城牆不僅堅固無比，而且在古代多次成功（　　）了敵軍的猛烈進攻。", options: ["抵禦", "探求", "籌劃", "目睹"] },
+      { id: 13, word: "消耗", definition: "因使用或運作而使精神、體力或物資減少。", sentence: "這項體能訓練不僅會（　　）大量的體力，還需要運動員具備強大的意志力。", options: ["消耗", "密切", "構造", "範圍"] },
+      { id: 14, word: "粗糙", definition: "表面不光滑、不細致，或製作不精細。", sentence: "爸爸的雙手試圖修好舊桌子，雙手變得十分（　　），與妹妹滑嫩的手截然不同。", options: ["粗糙", "靈敏", "獨特", "莊嚴"] },
+      { id: 15, word: "哆嗦", definition: "因寒冷、恐懼或生氣而身體發抖。", sentence: "寒風不僅刺骨地吹來，還讓凍得瑟瑟發抖的警衛情不自禁地打起了（　　）。", options: ["哆嗦", "疑團", "象徵", "衝擊"] },
+      { id: 16, word: "天賦異稟", definition: "天生具有特殊的卓越才能或資質。", sentence: "他雖然在音樂創作上（　　），但如果沒有日複一日的苦練，也無法成為享譽全球的演奏家。", options: ["天賦異稟", "稀奇古怪", "鬼斧神工", "相輔相成"] },
+      { id: 17, word: "展覽", definition: "將物品陳列出來供公開觀賞。", sentence: "博物館不僅舉辦了這次珍貴文物的歷史（　　），還吸引了數以萬計的市民前來參觀。", options: ["展覽", "範圍", "構造", "疑團"] },
+      { id: 18, word: "構造", definition: "結構與組織型態。", sentence: "這台先進設備的內部（　　）非常複雜，因此維修人員必須經過嚴格的專業培訓。", options: ["構造", "密切", "消耗", "展覽"] },
+      { id: 19, word: "範圍", definition: "界限或活動四周涵蓋的區域。", sentence: "這次考試的復習（　　）不僅涵蓋了本學期的全部單元，還需要學生具備靈活運用的能力。", options: ["範圍", "展覽", "疑團", "象徵"] },
+      { id: 20, word: "聳立", definition: "高高地直立挺拔。", sentence: "那座巍峨的高山不僅（　　）於雲霄之中，還成為了這片平原上最醒目的地標。", options: ["聳立", "翱翔", "仰望", "覆蓋"] },
+      { id: 21, word: "衝擊", definition: "強大的力量撞擊或造成深刻的心理、社會影響。", sentence: "新技術的迅速崛起不僅對傳統行業造成了巨大（　）同時也帶來了前所未有的發展機遇。", options: ["衝擊", "哆嗦", "疑團", "抵禦"] },
+      { id: 22, word: "覆蓋", definition: "遮蓋或鋪滿在表面上。", sentence: "暴風雪過後，廣闊的大地不僅被厚厚的白雪所（　　），連遠處的山林也變成了一片銀白世界。", options: ["覆蓋", "聳立", "翱翔", "仰望"] },
+      { id: 23, word: "鬼斧神工", definition: "形容技藝巧奪天工，非人力所能及。", sentence: "這座天然石雕不僅形態逼真，而且展現出大自然（　　）的奇妙魅力，讓人驚歎不已。", options: ["鬼斧神工", "高聳入雲", "無影無蹤", "瞬息萬變"] },
+      { id: 24, word: "歎為觀止", definition: "讚嘆所見到的事物精妙完美到了極點。", sentence: "舞者們的表演不僅流暢優雅，精湛的技藝更是讓在場的所有觀眾（　　）。", options: ["歎為觀止", "肅然起敬", "拾級而上", "相輔相成"] },
+      { id: 25, word: "莊嚴", definition: "端莊嚴肅，充滿令人敬畏的氣氛。", sentence: "升旗儀式現場不僅氣氛無比（　　），而且每一位代表都屏息凝視，向國旗致敬。", options: ["莊嚴", "粗糙", "靈敏", "獨特"] },
+      { id: 26, word: "象徵", definition: "用具體事物表現抽象的意義與精神。", sentence: "橄欖枝不僅是和平的（　　），也寄託了人類對美好未來的無限憧憬。", options: ["象徵", "疑團", "範圍", "哆嗦"] },
+      { id: 27, word: "仰望", definition: "抬頭向高處看。", sentence: "夜晚我們坐在草地上，不僅抬頭（　）璀璨的星空，還感受到了宇宙的浩瀚無垠。", options: ["仰望", "目睹", "翱翔", "聳立"] },
+      { id: 28, word: "籌劃", definition: "謀劃並準備安排。", sentence: "為了讓活動順利舉行，籌委會不僅提早數月進行（　　），還反覆確認每一個細節。", options: ["籌劃", "探求", "抵禦", "展覽"] },
+      { id: 29, word: "目睹", definition: "親眼看見。", sentence: "他不僅親眼（　）了這場歷史性的比賽，還在賽後幸運地與冠軍選手合影留念。", options: ["目睹", "仰望", "探求", "籌劃"] },
+      { id: 30, word: "拾級而上", definition: "順著石階一步一步往上走。", sentence: "遊客們不僅沿着清幽古道（　），還沿途欣賞了山間清澈流淌的溪流。", options: ["拾級而上", "高聳入雲", "歎為觀止", "相輔相成"] },
+      { id: 31, word: "高聳入雲", definition: "高高直立，彷彿伸入雲霄。", sentence: "這座摩天大樓不僅（　　），而且其前衛的建築設計也成為了這座城市的地標。", options: ["高聳入雲", "鬼斧神工", "無影無蹤", "瞬息萬變"] },
+      { id: 32, word: "肅然起敬", definition: "因受感動或敬佩而產生莊嚴恭敬的態度。", sentence: "聽到老戰士英勇不屈的事蹟後，在場的每一位同學都不禁（　　），發自內心佩服。", options: ["肅然起敬", "歎為觀止", "拾級而上", "相輔相成"] }
+    ];
+
+    /* Render Dictionary (Knight Only) */
+    function renderWordDictionary() {
+      const grid = document.getElementById('word-dictionary-grid');
+      if (!grid) return;
+      grid.innerHTML = questionBank.map((q, idx) => `
+        <div class="bg-slate-900/80 border border-slate-800 p-2 rounded-lg text-amber-300 font-bold shadow-inner flex items-center justify-center gap-1.5">
+          <span class="text-[10px] text-slate-500 font-mono">${idx + 1}.</span>
+          <span>${q.word}</span>
+        </div>
+      `).join('');
+    }
+
+    /* =========================================================
+       2. SVG ARTWORK DEFINITIONS (HEROES & MONSTERS)
+       ========================================================= */
+    const heroSvgs = {
+      mage: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+        <path d="M25,85 L75,85 L68,45 L32,45 Z" fill="#6b21a8" />
+        <path d="M40,45 L60,45 L50,85 Z" fill="#9333ea" />
+        <circle cx="50" cy="38" r="14" fill="#fde047" opacity="0.3"/>
+        <path d="M30,38 C30,20 70,20 70,38 C70,45 62,50 50,50 C38,50 30,45 30,38 Z" fill="#581c87" />
+        <circle cx="50" cy="36" r="8" fill="#fca5a5" />
+        <circle cx="47" cy="35" r="1.5" fill="#a855f7" />
+        <circle cx="53" cy="35" r="1.5" fill="#a855f7" />
+        <line x1="72" y1="20" x2="72" y2="88" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="72" cy="18" r="7" fill="#c084fc" />
+        <polygon points="72,8 75,15 82,18 75,21 72,28 69,21 62,18 69,15" fill="#f0abfc"/>
+      </svg>`,
+      archer: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+        <path d="M28,85 L72,85 L65,45 L35,45 Z" fill="#065f46" />
+        <path d="M32,38 C32,22 68,22 68,38 C68,46 60,50 50,50 C40,50 32,46 32,38 Z" fill="#047857" />
+        <circle cx="50" cy="36" r="7.5" fill="#fde047" />
+        <path d="M44,32 Q50,28 56,32 L54,39 L46,39 Z" fill="#15803d"/>
+        <path d="M72,25 Q85,50 72,75" stroke="#78350f" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <line x1="72" y1="25" x2="72" y2="75" stroke="#e2e8f0" stroke-width="1.5"/>
+        <line x1="50" y1="50" x2="80" y2="50" stroke="#f59e0b" stroke-width="2.5"/>
+        <polygon points="84,50 78,47 78,53" fill="#dc2626"/>
+      </svg>`,
+      knight: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+        <path d="M25,85 L75,85 L66,45 L34,45 Z" fill="#475569" />
+        <path d="M42,45 L58,45 L54,85 L46,85 Z" fill="#94a3b8" />
+        <rect x="34" y="22" width="32" height="26" rx="6" fill="#64748b" />
+        <path d="M34,22 C34,12 66,12 66,22 Z" fill="#475569" />
+        <rect x="38" y="30" width="24" height="5" rx="2" fill="#0f172a" />
+        <path d="M50,14 C50,4 65,8 60,18 Z" fill="#dc2626" />
+        <line x1="76" y1="15" x2="76" y2="82" stroke="#cbd5e1" stroke-width="4"/>
+        <polygon points="76,8 80,18 72,18" fill="#f8fafc"/>
+        <line x1="68" y1="65" x2="84" y2="65" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+      </svg>`
+    };
+
+    const monsterSvgs = {
+      slime: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+        <path d="M20,75 Q15,40 50,35 Q85,40 80,75 Q50,90 20,75 Z" fill="#10b981" />
+        <ellipse cx="38" cy="55" rx="5" ry="7" fill="#022c22" />
+        <ellipse cx="62" cy="55" rx="5" ry="7" fill="#022c22" />
+        <circle cx="36" cy="53" r="2" fill="#ffffff" />
+        <circle cx="60" cy="53" r="2" fill="#ffffff" />
+        <path d="M44,68 Q50,74 56,68" stroke="#022c22" stroke-width="3" stroke-linecap="round" fill="none"/>
+      </svg>`,
+      goblin: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+        <path d="M30,85 L70,85 L60,55 L40,55 Z" fill="#15803d"/>
+        <circle cx="50" cy="40" r="18" fill="#22c55e"/>
+        <polygon points="20,35 35,38 32,48" fill="#15803d"/>
+        <polygon points="80,35 65,38 68,48" fill="#15803d"/>
+        <circle cx="43" cy="38" r="3" fill="#dc2626"/>
+        <circle cx="57" cy="38" r="3" fill="#dc2626"/>
+        <path d="M42,50 Q50,44 58,50" stroke="#052e16" stroke-width="3" fill="none"/>
+      </svg>`,
+      skeleton: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+        <path d="M35,85 L65,85 L58,55 L42,55 Z" fill="#e2e8f0"/>
+        <rect x="36" y="28" width="28" height="24" rx="8" fill="#f8fafc"/>
+        <circle cx="43" cy="38" r="4.5" fill="#0f172a"/>
+        <circle cx="57" cy="38" r="4.5" fill="#0f172a"/>
+        <polygon points="50,44 47,48 53,48" fill="#0f172a"/>
+        <line x1="42" y1="52" x2="58" y2="52" stroke="#0f172a" stroke-width="2"/>
+        <line x1="46" y1="50" x2="46" y2="54" stroke="#0f172a" stroke-width="1.5"/>
+        <line x1="50" y1="50" x2="50" y2="54" stroke="#0f172a" stroke-width="1.5"/>
+        <line x1="54" y1="50" x2="54" y2="54" stroke="#0f172a" stroke-width="1.5"/>
+      </svg>`,
+      dragon: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+        <path d="M20,85 L80,85 L70,45 L30,45 Z" fill="#991b1b" />
+        <path d="M15,40 Q35,20 50,40 Q65,20 85,40 Q70,75 50,75 Q30,75 15,40 Z" fill="#dc2626" />
+        <polygon points="35,22 42,32 30,32" fill="#b91c1c"/>
+        <polygon points="65,22 58,32 70,32" fill="#b91c1c"/>
+        <circle cx="38" cy="45" r="4" fill="#facc15" />
+        <circle cx="62" cy="45" r="4" fill="#facc15" />
+        <circle cx="38" cy="45" r="1.5" fill="#000000" />
+        <circle cx="62" cy="45" r="1.5" fill="#000000" />
+        <path d="M40,60 Q50,68 60,60" stroke="#450a0a" stroke-width="3" fill="none"/>
+      </svg>`
+    };
+
+    /* =========================================================
+       3. GAME STATE MANAGEMENT & SYSTEM SOUND SYNTHESIZER
+       ========================================================= */
+    const heroProfiles = {
+      mage: { name: "法師", hpMax: 50, expBonus: 0.30, hintAllowed: false, initialPouch: 0 },
+      archer: { name: "弓箭手", hpMax: 80, expBonus: 0.15, hintAllowed: true, initialPouch: 3 },
+      knight: { name: "騎士", hpMax: 120, expBonus: 0.0, hintAllowed: true, initialPouch: 12 }
+    };
+
+    let gameState = {
+      heroType: null,
+      heroHp: 100,
+      heroHpMax: 100,
+      heroLevel: 1,
+      heroExp: 0,
+      heroExpMax: 100,
+      totalExp: 0,
+      coins: 0,
+      pouchCount: 0,
+      combo: 0,
+      currentLevelIdx: 0, // 0 to 31
+      monstersKilled: 0,
+      questionsAnswered: 0,
+      soundEnabled: true
+    };
+
+    let currentTimer = null;
+    let timerSecondsLeft = 60;
+    let timerMaxSeconds = 60;
+
+    // Web Audio API Synthesizer
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!gameState.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
+
+        if (type === 'attack') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if (type === 'damage') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'levelup') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.setValueAtTime(600, now + 0.1);
+          osc.frequency.setValueAtTime(900, now + 0.2);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } else if (type === 'pouch') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(1040, now + 0.2);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'coins') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(987.77, now); // B5
+          osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (e) {
+        console.log("Audio not supported or blocked", e);
+      }
+    }
+
+    function toggleSound() {
+      gameState.soundEnabled = !gameState.soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      if (gameState.soundEnabled) {
+        icon.className = 'fa-solid fa-volume-high text-lg';
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark text-lg text-slate-500';
+      }
+    }
+
+    /* =========================================================
+       4. GAME LOGIC & ENGINE
+       ========================================================= */
+
+    function selectHero(type) {
+      const p = heroProfiles[type];
+      gameState.heroType = type;
+      gameState.heroHp = p.hpMax;
+      gameState.heroHpMax = p.hpMax;
+      gameState.pouchCount = p.initialPouch;
+
+      document.getElementById('screen-hero-select').classList.add('hidden');
+      document.getElementById('screen-battle').classList.remove('hidden');
+
+      // Setup Hero UI
+      document.getElementById('hero-graphics-container').innerHTML = heroSvgs[type];
+      document.getElementById('pouch-count').innerText = gameState.pouchCount;
+      document.getElementById('battle-coins').innerText = gameState.coins;
+
+      const btnHint = document.getElementById('btn-hint');
+      if (!p.hintAllowed) {
+        btnHint.disabled = true;
+        btnHint.classList.add('opacity-40', 'cursor-not-allowed');
+      } else {
+        btnHint.disabled = false;
+        btnHint.classList.remove('opacity-40', 'cursor-not-allowed');
+      }
+
+      const btnKnightSkill = document.getElementById('btn-knight-skill');
+      const knightDictSection = document.getElementById('knight-dictionary-section');
+      if (type === 'knight') {
+        btnKnightSkill.classList.remove('hidden');
+        knightDictSection.classList.remove('hidden');
+        renderWordDictionary();
+      } else {
+        btnKnightSkill.classList.add('hidden');
+        knightDictSection.classList.add('hidden');
+      }
+
+      loadQuestion(0);
+    }
+
+    function loadQuestion(index) {
+      if (index >= questionBank.length) {
+        triggerVictory();
+        return;
+      }
+
+      gameState.currentLevelIdx = index;
+      const q = questionBank[index];
+
+      // Update UI Stage Counter
+      document.getElementById('level-num').innerText = index + 1;
+      document.getElementById('combo-count').innerText = gameState.combo;
+
+      // Reset panels
+      document.getElementById('hint-box').classList.add('hidden');
+      document.getElementById('escape-panel').classList.add('hidden');
+      document.getElementById('interactive-area').classList.remove('hidden');
+      document.getElementById('input-mode-container').classList.remove('hidden');
+      document.getElementById('choice-mode-container').classList.add('hidden');
+      document.getElementById('answer-input').value = '';
+
+      // Set Question Text
+      document.getElementById('question-text').innerText = `${index + 1}. ${q.sentence}`;
+
+      // Set Monster Graphic & Stats based on level index
+      const monsterNameEl = document.getElementById('monster-name');
+      const monsterGraphicsContainer = document.getElementById('monster-graphics-container');
+      const monsterAtkEl = document.getElementById('monster-atk-text');
+      const monsterHpText = document.getElementById('monster-hp-text');
+
+      if (index < 8) {
+        monsterNameEl.innerText = "綠史萊姆";
+        monsterGraphicsContainer.innerHTML = monsterSvgs.slime;
+        monsterAtkEl.innerText = "10";
+      } else if (index < 18) {
+        monsterNameEl.innerText = "地城哥布林";
+        monsterGraphicsContainer.innerHTML = monsterSvgs.goblin;
+        monsterAtkEl.innerText = "15";
+      } else if (index < 28) {
+        monsterNameEl.innerText = "骷髏戰士";
+        monsterGraphicsContainer.innerHTML = monsterSvgs.skeleton;
+        monsterAtkEl.innerText = "20";
+      } else {
+        monsterNameEl.innerText = "遠古紅龍";
+        monsterGraphicsContainer.innerHTML = monsterSvgs.dragon;
+        monsterAtkEl.innerText = "30";
+      }
+      monsterHpText.innerText = "1/1";
+
+      updateHeroUI();
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(currentTimer);
+      timerSecondsLeft = 60;
+      updateTimerUI();
+
+      currentTimer = setInterval(() => {
+        timerSecondsLeft--;
+        updateTimerUI();
+        if (timerSecondsLeft <= 0) {
+          clearInterval(currentTimer);
+          handleTimeOut();
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      document.getElementById('timer-text').innerText = timerSecondsLeft;
+      const pct = (timerSecondsLeft / timerMaxSeconds) * 100;
+      document.getElementById('timer-bar').style.width = `${pct}%`;
+    }
+
+    function updateHeroUI() {
+      document.getElementById('hero-hp-text').innerText = `${gameState.heroHp}/${gameState.heroHpMax}`;
+      const hpPct = Math.max(0, (gameState.heroHp / gameState.heroHpMax) * 100);
+      document.getElementById('hero-hp-bar').style.width = `${hpPct}%`;
+
+      document.getElementById('hero-exp-text').innerText = `${gameState.heroExp}/${gameState.heroExpMax}`;
+      const expPct = Math.min(100, (gameState.heroExp / gameState.heroExpMax) * 100);
+      document.getElementById('hero-exp-bar').style.width = `${expPct}%`;
+
+      document.getElementById('hero-lvl-badge').innerText = `Lv.${gameState.heroLevel}`;
+      document.getElementById('pouch-count').innerText = gameState.pouchCount;
+      document.getElementById('battle-coins').innerText = gameState.coins;
+    }
+
+    function submitAnswer() {
+      const inputEl = document.getElementById('answer-input');
+      const userVal = inputEl.value.trim();
+
+      if (!userVal) return;
+
+      const currentQ = questionBank[gameState.currentLevelIdx];
+      if (userVal === currentQ.word) {
+        handleCorrectAnswer();
+      } else {
+        handleWrongAnswer();
+      }
+    }
+
+    function submitChoice(chosenWord) {
+      const currentQ = questionBank[gameState.currentLevelIdx];
+      if (chosenWord === currentQ.word) {
+        handleCorrectAnswer();
+      } else {
+        handleWrongAnswer();
+      }
+    }
+
+    function handleCorrectAnswer() {
+      clearInterval(currentTimer);
+      playSound('attack');
+
+      // Hero Attack FX Animation
+      const heroBox = document.getElementById('hero-avatar-box');
+      heroBox.classList.add('animate-hero-attack');
+      setTimeout(() => heroBox.classList.remove('animate-hero-attack'), 350);
+
+      // Monster Damage Shake
+      const monsterBox = document.getElementById('monster-avatar-box');
+      monsterBox.classList.add('animate-shake');
+      setTimeout(() => monsterBox.classList.remove('animate-shake'), 450);
+
+      // Calculate EXP Rewards
+      const baseExp = 50;
+      const speedBonusMultiplier = timerSecondsLeft / 60; // 0 to 1
+      const speedExp = Math.round(30 * speedBonusMultiplier);
+      const heroBonus = heroProfiles[gameState.heroType].expBonus;
+      const totalEarnedExp = Math.round((baseExp + speedExp) * (1 + heroBonus));
+
+      gameState.combo++;
+      gameState.heroExp += totalEarnedExp;
+      gameState.totalExp += totalEarnedExp;
+      gameState.monstersKilled++;
+      gameState.questionsAnswered++;
+      
+      // 每過一關獲得 10g
+      gameState.coins += 10;
+      playSound('coins');
+
+      // Floating text effect
+      showFloatingText(`+${totalEarnedExp} EXP (+10G)`, 'text-yellow-400');
+
+      // Level up check
+      if (gameState.heroExp >= gameState.heroExpMax) {
+        gameState.heroLevel++;
+        gameState.heroExp -= gameState.heroExpMax;
+        gameState.heroExpMax = Math.round(gameState.heroExpMax * 1.25);
+        gameState.heroHpMax += 15;
+        gameState.heroHp = gameState.heroHpMax; // Full heal on level up
+        playSound('levelup');
+        showFloatingText(`LEVEL UP! Lv.${gameState.heroLevel}`, 'text-emerald-400');
+      }
+
+      updateHeroUI();
+
+      // Next level delay
+      setTimeout(() => {
+        loadQuestion(gameState.currentLevelIdx + 1);
+      }, 700);
+    }
+
+    function handleWrongAnswer() {
+      playSound('damage');
+      gameState.combo = 0;
+      document.getElementById('combo-count').innerText = 0;
+
+      // Monster Attack Damage
+      let damage = 15;
+      if (gameState.currentLevelIdx >= 28) damage = 30;
+      else if (gameState.currentLevelIdx >= 18) damage = 20;
+
+      gameState.heroHp = Math.max(0, gameState.heroHp - damage);
+
+      const heroBox = document.getElementById('hero-avatar-box');
+      heroBox.classList.add('animate-shake');
+      setTimeout(() => heroBox.classList.remove('animate-shake'), 450);
+
+      showFloatingText(`-${damage} HP`, 'text-red-500');
+      updateHeroUI();
+
+      if (gameState.heroHp <= 0) {
+        clearInterval(currentTimer);
+        setTimeout(triggerGameOver, 600);
+      }
+    }
+
+    function handleTimeOut() {
+      showFloatingText(`時間到！ -10 HP`, 'text-red-400');
+      handleWrongAnswer();
+    }
+
+    /* Helper: Pouch 4-Choice Skill */
+    function usePouch() {
+      if (gameState.pouchCount <= 0) return;
+      gameState.pouchCount--;
+      playSound('pouch');
+      document.getElementById('pouch-count').innerText = gameState.pouchCount;
+
+      const choiceContainer = document.getElementById('choice-mode-container');
+      const inputContainer = document.getElementById('input-mode-container');
+
+      inputContainer.classList.add('hidden');
+      choiceContainer.classList.remove('hidden');
+      choiceContainer.classList.add('animate-pouch-burst');
+
+      const currentQ = questionBank[gameState.currentLevelIdx];
+      // Shuffle choices
+      const shuffled = [...currentQ.options].sort(() => Math.random() - 0.5);
+
+      choiceContainer.innerHTML = shuffled.map(opt => `
+        <button onclick="submitChoice('${opt}')" class="p-3.5 bg-indigo-950/80 hover:bg-indigo-900 border-2 border-indigo-500/60 hover:border-amber-400 rounded-xl font-bold text-amber-200 transition shadow-lg text-sm md:text-base active:scale-95 flex items-center justify-center">
+          ${opt}
+        </button>
+      `).join('');
+    }
+
+    /* Helper: Answer Hint Skill */
+    function useHint() {
+      const currentQ = questionBank[gameState.currentLevelIdx];
+      const hintBox = document.getElementById('hint-box');
+      const hintText = document.getElementById('hint-text');
+
+      hintBox.classList.remove('hidden');
+      hintText.innerText = `詞義解釋：${currentQ.definition} （字數：${currentQ.word.length} 字）`;
+    }
+
+    /* Helper: Escape Battle Button */
+    function escapeBattle() {
+      clearInterval(currentTimer);
+      playSound('damage');
+      gameState.combo = 0;
+      document.getElementById('combo-count').innerText = 0;
+
+      // 選擇逃走則沒有g
+
+      // Monster deal attack damage on escape
+      let damage = 10;
+      gameState.heroHp = Math.max(0, gameState.heroHp - damage);
+
+      const heroBox = document.getElementById('hero-avatar-box');
+      heroBox.classList.add('animate-shake');
+      setTimeout(() => heroBox.classList.remove('animate-shake'), 450);
+
+      updateHeroUI();
+
+      const currentQ = questionBank[gameState.currentLevelIdx];
+      document.getElementById('interactive-area').classList.add('hidden');
+      document.getElementById('escape-panel').classList.remove('hidden');
+      document.getElementById('escape-answer-word').innerText = currentQ.word;
+      document.getElementById('escape-answer-def').innerText = `釋義：${currentQ.definition}`;
+
+      if (gameState.heroHp <= 0) {
+        setTimeout(triggerGameOver, 1500);
+      }
+    }
+
+    function nextLevelAfterEscape() {
+      loadQuestion(gameState.currentLevelIdx + 1);
+    }
+
+    /* Helper: Floating Text FX */
+    function showFloatingText(str, colorClass) {
+      const layer = document.getElementById('fx-layer');
+      const el = document.createElement('div');
+      el.className = `float-text font-black text-lg md:text-xl drop-shadow-md ${colorClass}`;
+      el.innerText = str;
+      layer.appendChild(el);
+      setTimeout(() => el.remove(), 900);
+    }
+
+    /* Knight Exclusive Dictionary Toggle */
+    function toggleKnightDictionary() {
+      const details = document.getElementById('knight-dictionary-details');
+      if (details) {
+        details.open = !details.open;
+      }
+    }
+
+    /* =========================================================
+       5. SHOP SYSTEM
+       ========================================================= */
+    function openShop() {
+      document.getElementById('shop-coins').innerText = gameState.coins;
+      document.getElementById('modal-shop').classList.remove('hidden');
+    }
+
+    function closeShop() {
+      document.getElementById('modal-shop').classList.add('hidden');
+    }
+
+    function buyItem(itemType) {
+      if (itemType === 'potion') {
+        if (gameState.coins >= 80) {
+          gameState.coins -= 80;
+          gameState.heroHp = Math.min(gameState.heroHpMax, gameState.heroHp + 40);
+          playSound('coins');
+          showFloatingText('+40 HP', 'text-emerald-400');
+        }
+      } else if (itemType === 'pouch') {
+        if (gameState.coins >= 200) {
+          gameState.coins -= 200;
+          gameState.pouchCount += 1;
+          playSound('coins');
+          showFloatingText('+1 小錦囊', 'text-indigo-400');
+        }
+      }
+      document.getElementById('shop-coins').innerText = gameState.coins;
+      updateHeroUI();
+    }
+
+    /* =========================================================
+       6. GAME END (VICTORY / GAMEOVER)
+       ========================================================= */
+    function triggerVictory() {
+      clearInterval(currentTimer);
+      document.getElementById('screen-battle').classList.add('hidden');
+      document.getElementById('screen-end').classList.remove('hidden');
+
+      document.getElementById('end-icon').innerHTML = '<i class="fa-solid fa-trophy text-amber-400 text-6xl"></i>';
+      document.getElementById('end-title').innerText = "冒險大成功！";
+      document.getElementById('end-msg').innerText = "你成功討伐了地城的所有魔物與終極大魔王，成為了真正的詞語大冒險家！";
+
+      // Badge logic
+      let badge = "🏆 詞語地城王者";
+      if (gameState.totalExp >= 2000) badge = "🌟 詞語大宗師 (最高榮譽)";
+      else if (gameState.totalExp >= 1500) badge = "⚔️ 傳奇冒險家";
+      document.getElementById('end-badge-box').innerText = badge;
+
+      updateEndStats();
+      spawnConfetti();
+    }
+
+    function triggerGameOver() {
+      clearInterval(currentTimer);
+      document.getElementById('screen-battle').classList.add('hidden');
+      document.getElementById('screen-end').classList.remove('hidden');
+
+      document.getElementById('end-icon').innerHTML = '<i class="fa-solid fa-skull-crossbones text-red-500 text-6xl"></i>';
+      document.getElementById('end-title').innerText = "冒險中途倒下...";
+      document.getElementById('end-msg').innerText = "你在地城中體力不支，但累積的詞語知識不會白費，請重新整裝再戰！";
+      document.getElementById('end-badge-box').innerText = "🛡️ 不屈的探險者";
+
+      updateEndStats();
+    }
+
+    function updateEndStats() {
+      document.getElementById('final-level').innerText = `Lv.${gameState.heroLevel}`;
+      document.getElementById('final-total-exp').innerText = `${gameState.totalExp} EXP`;
+      document.getElementById('final-monsters-killed').innerText = `${gameState.monstersKilled} 隻`;
+      document.getElementById('final-coins').innerText = `${gameState.coins} G`;
+      document.getElementById('final-questions').innerText = `${gameState.questionsAnswered} / 32`;
+    }
+
+    function spawnConfetti() {
+      const colors = ['#f59e0b', '#10b981', '#6366f1', '#ec4899', '#3b82f6'];
+      for (let i = 0; i < 40; i++) {
+        const conf = document.createElement('div');
+        conf.className = 'confetti-piece';
+        conf.style.left = Math.random() * 100 + 'vw';
+        conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 4000);
+      }
+    }
+
+    function restartGame() {
+      clearInterval(currentTimer);
+      gameState = {
+        heroType: null,
+        heroHp: 100,
+        heroHpMax: 100,
+        heroLevel: 1,
+        heroExp: 0,
+        heroExpMax: 100,
+        totalExp: 0,
+        coins: 0,
+        pouchCount: 0,
+        combo: 0,
+        currentLevelIdx: 0,
+        monstersKilled: 0,
+        questionsAnswered: 0,
+        soundEnabled: gameState.soundEnabled
+      };
+
+      document.getElementById('screen-end').classList.add('hidden');
+      document.getElementById('screen-battle').classList.add('hidden');
+      document.getElementById('screen-hero-select').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
